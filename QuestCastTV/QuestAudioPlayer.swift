@@ -5,6 +5,9 @@ final class QuestAudioPlayer {
     private static let sampleRate = 48_000.0
     private static let channels: AVAudioChannelCount = 2
     private static let bytesPerFrame = 4
+    private static let bufferCapacityFrames = 9_600 // 200 ms
+    private static let bufferStartFrames = 2_880 // 60 ms
+    private static let bufferHighWaterFrames = 5_760 // 120 ms
 
     private let queue = DispatchQueue(label: "com.apctv.questcast.audio", qos: .userInteractive)
     private let engine = AVAudioEngine()
@@ -15,9 +18,9 @@ final class QuestAudioPlayer {
         interleaved: true
     )!
     private let ring = PCMByteRingBuffer(
-        capacityFrames: 9_600,
-        startFrames: 2_400,
-        highWaterFrames: 4_800,
+        capacityFrames: bufferCapacityFrames,
+        startFrames: bufferStartFrames,
+        highWaterFrames: bufferHighWaterFrames,
         bytesPerFrame: bytesPerFrame
     )
     private let onBufferChanged: (Int) -> Void
@@ -127,8 +130,9 @@ private final class PCMByteRingBuffer {
         let alignedByteCount = data.count - (data.count % bytesPerFrame)
         guard alignedByteCount > 0 else { return byteCount / bytesPerFrame }
 
-        if byteCount + alignedByteCount > highWaterBytes {
-            discardOldest(min(alignedByteCount, byteCount))
+        let highWaterOverflow = byteCount + alignedByteCount - highWaterBytes
+        if highWaterOverflow > 0 {
+            discardOldest(highWaterOverflow)
         }
         if byteCount + alignedByteCount > storage.count {
             discardOldest(byteCount + alignedByteCount - storage.count)

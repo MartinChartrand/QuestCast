@@ -1,10 +1,12 @@
 package com.apctv.questcast
 
+import android.Manifest
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.Service
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.hardware.display.DisplayManager
 import android.hardware.display.VirtualDisplay
 import android.media.AudioAttributes
@@ -111,6 +113,18 @@ class ProjectionService : Service() {
         }
 
         encoder = MediaCodec.createEncoderByType(MediaFormat.MIMETYPE_VIDEO_AVC).also { codec ->
+            val bitrateModes = codec.codecInfo
+                .getCapabilitiesForType(MediaFormat.MIMETYPE_VIDEO_AVC)
+                .encoderCapabilities
+            if (bitrateModes.isBitrateModeSupported(MediaCodecInfo.EncoderCapabilities.BITRATE_MODE_CBR)) {
+                format.setInteger(
+                    MediaFormat.KEY_BITRATE_MODE,
+                    MediaCodecInfo.EncoderCapabilities.BITRATE_MODE_CBR
+                )
+                Log.i(TAG, "Using ${codec.name} at $BIT_RATE bps in CBR mode")
+            } else {
+                Log.i(TAG, "Using ${codec.name} at $BIT_RATE bps in encoder-default bitrate mode")
+            }
             codec.configure(format, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE)
             val inputSurface = codec.createInputSurface()
             codec.start()
@@ -147,6 +161,9 @@ class ProjectionService : Service() {
     }
 
     private fun startAudioCapture() {
+        check(checkSelfPermission(Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
+            "Playback audio permission is unavailable"
+        }
         val mediaProjection = projection ?: error("MediaProjection is unavailable")
         val captureConfiguration = AudioPlaybackCaptureConfiguration.Builder(mediaProjection)
             .addMatchingUsage(AudioAttributes.USAGE_GAME)
@@ -295,7 +312,7 @@ class ProjectionService : Service() {
         private const val WIDTH = 1920
         private const val HEIGHT = 1080
         private const val FRAME_RATE = 60
-        private const val BIT_RATE = 16_000_000
+        private const val BIT_RATE = 12_000_000
         private const val I_FRAME_INTERVAL_SECONDS = 1
         private const val DEFAULT_PORT = 49152
         private const val CHANNEL_ID = "questcast-capture"

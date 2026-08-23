@@ -42,6 +42,8 @@ The Apple TV receiver app must currently be built and signed with the user's own
 
 Both the Sender and the Receiver app must be installed on the Meta Quest 3 and Apple TV respectively for this casting to work. Both devices must also be on the same local network.
 
+The `fix/spectator-stability` build uses the distinct Android application ID `ca.chartrand.questcast` and the visible name **QuestCast Lab**. It can stay installed beside the official sender as a fallback. This build has been physically validated with a Meta Quest Pro, Beat Saber, Les Mills Bodycombat, and an Apple TV.
+
 ## Repository layout
 
 - `QuestSender/` — native Android sender for Meta Horizon OS
@@ -102,13 +104,14 @@ The resulting APK is written under `QuestSender/app/build/outputs/apk/debug/`.
 
 - Codec: H.264/AVC
 - Capture target: 1920 x 1080 at 60 fps
-- Bit rate: 16 Mbps
+- Bit rate: 12 Mbps
+- Bit-rate mode: CBR when the hardware encoder advertises support; otherwise the encoder default
 - Keyframe interval: one second
 - Datagram size: no more than 1200 bytes
 - Incomplete-frame expiry: 80 ms
 - Receiver playback/jitter buffer: none
 - Optional audio: PCM 16-bit, 48 kHz stereo in 10 ms chunks
-- Audio startup/jitter buffer: approximately 50 ms, with continuous silence-safe playback and latency trimming
+- Audio startup/jitter buffer: starts at 60 ms, trims above 120 ms, and has a 200 ms hard capacity
 
 H.265 may reduce bandwidth, but H.264 is the current default because its hardware path is widely supported and predictable. A future H.265 mode should be measured end-to-end rather than assumed to be faster.
 
