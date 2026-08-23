@@ -83,7 +83,7 @@ class MainActivity : ComponentActivity() {
     }
 
     private val discoveryListener = object : NsdManager.DiscoveryListener {
-        override fun onDiscoveryStarted(serviceType: String) = setStatus("Looking for Apple TV…")
+        override fun onDiscoveryStarted(serviceType: String) = setStatus("Looking for receiver…")
 
         override fun onServiceFound(service: NsdServiceInfo) {
             if (service.serviceType != SERVICE_TYPE) return
@@ -149,7 +149,7 @@ class MainActivity : ComponentActivity() {
         }, matchWrap())
 
         content.addView(TextView(this).apply {
-            text = "Low-latency casting to Apple TV over your local network"
+            text = "Low-latency casting to Apple TV or iPad over your local network"
             textSize = 17f
             setTextColor(Color.rgb(181, 190, 211))
             gravity = Gravity.CENTER
@@ -272,7 +272,7 @@ class MainActivity : ComponentActivity() {
         })
 
         content.addView(TextView(this).apply {
-            text = "Keep QuestCast open on your Apple TV while connecting."
+            text = "Keep QuestCast open on the receiving device while connecting."
             textSize = 13f
             setTextColor(Color.argb(135, 255, 255, 255))
             gravity = Gravity.CENTER
@@ -330,23 +330,23 @@ class MainActivity : ComponentActivity() {
         receiverList.addView(button, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(62)).apply {
             bottomMargin = dp(10)
         })
-        setStatus("Apple TV found")
+        setStatus("Receiver found")
     }
 
     private fun setStatus(message: String) = runOnUiThread {
         if (!::statusTitle.isInitialized) return@runOnUiThread
 
         val presentation = when {
-            message == "Apple TV found" -> StatusPresentation(
-                "QuestCast TV found",
+            message == "Receiver found" -> StatusPresentation(
+                "QuestCast receiver found",
                 "Select the destination below to begin.",
                 STATUS_READY,
                 false,
                 false
             )
             message.startsWith("Looking") || message.startsWith("Starting discovery") -> StatusPresentation(
-                "Looking for QuestCast TV",
-                "Make sure the receiver is open on your Apple TV.",
+                "Looking for QuestCast receiver",
+                "Make sure QuestCast is open on the Apple TV or iPad.",
                 STATUS_WAITING,
                 true,
                 false
@@ -359,20 +359,20 @@ class MainActivity : ComponentActivity() {
                 false
             )
             message.startsWith("Starting") || message.startsWith("Encoder started") -> StatusPresentation(
-                "Connecting to Apple TV",
+                "Connecting to receiver",
                 "Preparing the low-latency video stream…",
                 STATUS_WAITING,
                 true,
                 true
             )
-            message == "Streaming video to Apple TV" -> StatusPresentation(
-                "Casting to Apple TV",
+            message == "Streaming video to receiver" -> StatusPresentation(
+                "Casting to receiver",
                 "Your headset view is live.",
                 STATUS_LIVE,
                 false,
                 true
             )
-            message == "Streaming video and audio to Apple TV" -> StatusPresentation(
+            message == "Streaming video and audio to receiver" -> StatusPresentation(
                 "Casting with headset audio",
                 "Your headset view and playback audio are live.",
                 STATUS_LIVE,
@@ -388,7 +388,7 @@ class MainActivity : ComponentActivity() {
             )
             message == "Cast stopped" -> StatusPresentation(
                 "Casting stopped",
-                "Select QuestCast TV to cast again.",
+                "Select a receiver to cast again.",
                 STATUS_READY,
                 false,
                 false
@@ -402,7 +402,7 @@ class MainActivity : ComponentActivity() {
             )
             message == "Capture was not started" -> StatusPresentation(
                 "Casting cancelled",
-                "Select QuestCast TV whenever you’re ready.",
+                "Select a receiver whenever you’re ready.",
                 STATUS_READY,
                 false,
                 false

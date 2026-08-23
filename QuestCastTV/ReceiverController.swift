@@ -12,6 +12,7 @@ final class ReceiverController: ObservableObject {
     @Published private(set) var audioBufferMilliseconds = 0
 
     let frameStore = FrameStore()
+    let advertisedName: String
 
     private let networkQueue = DispatchQueue(label: "com.apctv.questcast.receiver.network", qos: .userInteractive)
     private let decoder: VideoDecoder
@@ -42,6 +43,11 @@ final class ReceiverController: ObservableObject {
     )
 
     init() {
+#if os(tvOS)
+        advertisedName = "QuestCast TV"
+#else
+        advertisedName = "QuestCast iPad"
+#endif
         decoder = VideoDecoder(frameStore: frameStore)
     }
 
@@ -49,11 +55,12 @@ final class ReceiverController: ObservableObject {
         guard listener == nil else { return }
         do {
             let listener = try NWListener(using: .udp, on: 49152)
-            listener.service = NWListener.Service(name: "QuestCast TV", type: "_questcast._udp")
+            listener.service = NWListener.Service(name: advertisedName, type: "_questcast._udp")
             listener.stateUpdateHandler = { [weak self] state in
                 switch state {
                 case .ready:
-                    self?.publishStatus("Ready — select QuestCast TV in the headset")
+                    guard let self else { return }
+                    self.publishStatus(self.readyStatus)
                 case .failed(let error):
                     self?.publishStatus("Receiver failed: \(error.localizedDescription)")
                 case .waiting(let error):
@@ -147,10 +154,11 @@ final class ReceiverController: ObservableObject {
             self.audioAssembler.reset()
             self.audioPlayer.stop()
             DispatchQueue.main.async { [weak self] in
-                self?.isStreaming = false
-                self?.isAudioActive = false
-                self?.audioBufferMilliseconds = 0
-                self?.status = "Ready — select QuestCast TV in the headset"
+                guard let self else { return }
+                self.isStreaming = false
+                self.isAudioActive = false
+                self.audioBufferMilliseconds = 0
+                self.status = self.readyStatus
             }
         }
         timer.resume()
@@ -167,5 +175,9 @@ final class ReceiverController: ObservableObject {
 
     private func publishAudioDrops(_ count: Int) {
         DispatchQueue.main.async { [weak self] in self?.audioChunksDropped += count }
+    }
+
+    private var readyStatus: String {
+        "Ready — select \(advertisedName) in the headset"
     }
 }

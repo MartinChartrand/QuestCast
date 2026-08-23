@@ -2,11 +2,68 @@ import SwiftUI
 import UIKit
 
 struct ContentView: View {
+    @Environment(\.scenePhase) private var scenePhase
     @ObservedObject var receiver: ReceiverController
     @State private var diagnosticsVisible = false
+#if os(tvOS)
     @FocusState private var remoteCommandFocused: Bool
+#endif
 
     var body: some View {
+        platformContent
+            .preferredColorScheme(.dark)
+            .animation(.easeInOut(duration: 0.28), value: receiver.isStreaming)
+            .animation(.easeInOut(duration: 0.2), value: diagnosticsVisible)
+            .onChange(of: receiver.isStreaming) { _, isStreaming in
+                if !isStreaming {
+                    diagnosticsVisible = false
+                }
+#if os(tvOS)
+                requestRemoteCommandFocus()
+                UIApplication.shared.isIdleTimerDisabled = isStreaming
+#endif
+            }
+            .onChange(of: scenePhase) { _, phase in
+#if os(iOS)
+                UIApplication.shared.isIdleTimerDisabled = phase == .active
+#else
+                _ = phase
+#endif
+            }
+            .onAppear {
+#if os(tvOS)
+                UIApplication.shared.isIdleTimerDisabled = receiver.isStreaming
+#else
+                UIApplication.shared.isIdleTimerDisabled = true
+#endif
+                receiver.start()
+#if os(tvOS)
+                requestRemoteCommandFocus()
+#endif
+            }
+            .onDisappear {
+                UIApplication.shared.isIdleTimerDisabled = false
+            }
+    }
+
+    @ViewBuilder
+    private var platformContent: some View {
+#if os(tvOS)
+        receiverContent
+            .focusable()
+            .focusEffectDisabled()
+            .focused($remoteCommandFocused)
+            .onPlayPauseCommand {
+                guard receiver.isStreaming else { return }
+                diagnosticsVisible.toggle()
+            }
+            .accessibilityIdentifier(AccessibilityID.Receiver.surfaceView)
+#else
+        receiverContent
+#endif
+    }
+
+    private var receiverContent: some View {
         ZStack {
             waitingBackground
 
@@ -23,30 +80,19 @@ struct ContentView: View {
                 waitingView
                     .transition(.opacity)
             }
-        }
-        .animation(.easeInOut(duration: 0.28), value: receiver.isStreaming)
-        .animation(.easeInOut(duration: 0.2), value: diagnosticsVisible)
-        .focusable()
-        .focusEffectDisabled()
-        .focused($remoteCommandFocused)
-        .onPlayPauseCommand {
-            guard receiver.isStreaming else { return }
-            diagnosticsVisible.toggle()
-        }
-        .onChange(of: receiver.isStreaming) { _, isStreaming in
-            if !isStreaming {
-                diagnosticsVisible = false
+
+#if os(iOS)
+            if receiver.isStreaming {
+                VStack {
+                    HStack {
+                        Spacer()
+                        diagnosticsButton
+                    }
+                    Spacer()
+                }
+                .padding(24)
             }
-            requestRemoteCommandFocus()
-            UIApplication.shared.isIdleTimerDisabled = isStreaming
-        }
-        .onAppear {
-            UIApplication.shared.isIdleTimerDisabled = receiver.isStreaming
-            receiver.start()
-            requestRemoteCommandFocus()
-        }
-        .onDisappear {
-            UIApplication.shared.isIdleTimerDisabled = false
+#endif
         }
     }
 
@@ -90,7 +136,7 @@ struct ContentView: View {
                 Text("Waiting for your headset")
                     .font(.system(size: 54, weight: .semibold, design: .rounded))
 
-                Text("Open QuestCast on your headset, then select QuestCast TV.")
+                Text("Open QuestCast on your headset, then select \(receiver.advertisedName).")
                     .font(.title3)
                     .foregroundStyle(.white.opacity(0.68))
             }
@@ -105,10 +151,7 @@ struct ContentView: View {
             }
             .padding(.top, 9)
 
-            Label("During casting, press Play/Pause to show stream information", systemImage: "playpause.fill")
-                .font(.caption)
-                .foregroundStyle(.white.opacity(0.42))
-                .padding(.top, 4)
+            diagnosticsInstruction
         }
         .multilineTextAlignment(.center)
         .padding(60)
@@ -127,9 +170,7 @@ struct ContentView: View {
                             .font(.caption.weight(.bold))
                             .tracking(2)
                         Spacer()
-                        Text("Play/Pause to hide")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
+                        diagnosticsDismissHint
                     }
 
                     Text("QuestCast")
@@ -150,7 +191,7 @@ struct ContentView: View {
                     diagnosticRow("Incomplete frames", receiver.framesDropped.formatted())
                 }
                 .padding(26)
-                .frame(width: 470)
+                .frame(maxWidth: 470)
                 .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 24, style: .continuous))
                 .overlay {
                     RoundedRectangle(cornerRadius: 24, style: .continuous)
@@ -179,9 +220,56 @@ struct ContentView: View {
         receiver.status.hasPrefix("Ready") ? .green : .yellow
     }
 
+#if os(iOS)
+    private var diagnosticsButton: some View {
+        Button {
+            diagnosticsVisible.toggle()
+        } label: {
+            Image(systemName: diagnosticsVisible ? "info.circle.fill" : "info.circle")
+                .font(.title2.weight(.semibold))
+                .frame(width: 48, height: 48)
+        }
+        .buttonStyle(.plain)
+        .foregroundStyle(.white)
+        .background(.ultraThinMaterial, in: Circle())
+        .accessibilityLabel(diagnosticsVisible ? "Hide stream information" : "Show stream information")
+        .accessibilityIdentifier(AccessibilityID.Receiver.diagnosticsButton)
+    }
+#endif
+
+    @ViewBuilder
+    private var diagnosticsInstruction: some View {
+#if os(tvOS)
+        Label("During casting, press Play/Pause to show stream information", systemImage: "playpause.fill")
+            .font(.caption)
+            .foregroundStyle(.white.opacity(0.42))
+            .padding(.top, 4)
+#else
+        Label("During casting, tap the info button to show stream information", systemImage: "info.circle.fill")
+            .font(.caption)
+            .foregroundStyle(.white.opacity(0.42))
+            .padding(.top, 4)
+#endif
+    }
+
+    @ViewBuilder
+    private var diagnosticsDismissHint: some View {
+#if os(tvOS)
+        Text("Play/Pause to hide")
+            .font(.caption)
+            .foregroundStyle(.secondary)
+#else
+        Text("Tap info to hide")
+            .font(.caption)
+            .foregroundStyle(.secondary)
+#endif
+    }
+
+#if os(tvOS)
     private func requestRemoteCommandFocus() {
         DispatchQueue.main.async {
             remoteCommandFocused = true
         }
     }
+#endif
 }

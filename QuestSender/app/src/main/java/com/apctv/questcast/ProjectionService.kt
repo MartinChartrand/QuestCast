@@ -258,9 +258,9 @@ class ProjectionService : Service() {
         if (combined.isNotEmpty()) {
             UdpPacketizer.send(socket ?: return, combined.toByteArray(), 0, isConfig = true, isKeyFrame = true)
             publishStatus(if (audioCaptureActive && !audioCaptureFailed) {
-                "Streaming video and audio to Apple TV"
+                "Streaming video and audio to receiver"
             } else {
-                "Streaming video to Apple TV"
+                "Streaming video to receiver"
             })
         }
     }
@@ -280,7 +280,7 @@ class ProjectionService : Service() {
 
     private fun buildNotification(): Notification = Notification.Builder(this, CHANNEL_ID)
         .setContentTitle("QuestCast is active")
-        .setContentText("Streaming the headset view to Apple TV")
+        .setContentText("Streaming the headset view to the selected receiver")
         .setSmallIcon(android.R.drawable.presence_video_online)
         .setOngoing(true)
         .build()

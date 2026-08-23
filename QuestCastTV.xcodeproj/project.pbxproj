@@ -16,6 +16,17 @@
 		A10000000000000000000007 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000009 /* Assets.xcassets */; };
 		A10000000000000000000008 /* AudioPacketAssembler.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000010 /* AudioPacketAssembler.swift */; };
 		A10000000000000000000009 /* QuestAudioPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000011 /* QuestAudioPlayer.swift */; };
+		A10000000000000000000010 /* AccessibilityID.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000012 /* AccessibilityID.swift */; };
+		B10000000000000000000001 /* QuestCastTVApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000001 /* QuestCastTVApp.swift */; };
+		B10000000000000000000002 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000002 /* ContentView.swift */; };
+		B10000000000000000000003 /* ReceiverController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000003 /* ReceiverController.swift */; };
+		B10000000000000000000004 /* PacketAssembler.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000004 /* PacketAssembler.swift */; };
+		B10000000000000000000005 /* VideoDecoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000005 /* VideoDecoder.swift */; };
+		B10000000000000000000006 /* PixelBufferSurface.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000006 /* PixelBufferSurface.swift */; };
+		B10000000000000000000007 /* AccessibilityID.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000012 /* AccessibilityID.swift */; };
+		B10000000000000000000008 /* AudioPacketAssembler.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000010 /* AudioPacketAssembler.swift */; };
+		B10000000000000000000009 /* QuestAudioPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000011 /* QuestAudioPlayer.swift */; };
+		B1000000000000000000000A /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000002 /* Assets.xcassets */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -30,10 +41,21 @@
 		A20000000000000000000009 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		A20000000000000000000010 /* AudioPacketAssembler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioPacketAssembler.swift; sourceTree = "<group>"; };
 		A20000000000000000000011 /* QuestAudioPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuestAudioPlayer.swift; sourceTree = "<group>"; };
+		A20000000000000000000012 /* AccessibilityID.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccessibilityID.swift; sourceTree = "<group>"; };
+		B20000000000000000000001 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		B20000000000000000000002 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		B20000000000000000000003 /* QuestCastPad.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = QuestCastPad.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		A50000000000000000000002 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B50000000000000000000002 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -47,6 +69,7 @@
 			isa = PBXGroup;
 			children = (
 				A30000000000000000000002 /* QuestCastTV */,
+				B30000000000000000000001 /* QuestCastPad */,
 				A30000000000000000000003 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -62,16 +85,27 @@
 					A20000000000000000000006 /* PixelBufferSurface.swift */,
 					A20000000000000000000010 /* AudioPacketAssembler.swift */,
 					A20000000000000000000011 /* QuestAudioPlayer.swift */,
+				A20000000000000000000012 /* AccessibilityID.swift */,
 				A20000000000000000000007 /* Info.plist */,
 				A20000000000000000000009 /* Assets.xcassets */,
 			);
 			path = QuestCastTV;
 			sourceTree = "<group>";
 		};
+		B30000000000000000000001 /* QuestCastPad */ = {
+			isa = PBXGroup;
+			children = (
+				B20000000000000000000001 /* Info.plist */,
+				B20000000000000000000002 /* Assets.xcassets */,
+			);
+			path = QuestCastPad;
+			sourceTree = "<group>";
+		};
 		A30000000000000000000003 /* Products */ = {
 			isa = PBXGroup;
 			children = (
 				A20000000000000000000008 /* QuestCastTV.app */,
+				B20000000000000000000003 /* QuestCastPad.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -96,6 +130,23 @@
 			productReference = A20000000000000000000008 /* QuestCastTV.app */;
 			productType = "com.apple.product-type.application";
 		};
+		B40000000000000000000001 /* QuestCastPad */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B70000000000000000000001 /* Build configuration list for PBXNativeTarget "QuestCastPad" */;
+			buildPhases = (
+				B50000000000000000000001 /* Sources */,
+				B50000000000000000000002 /* Frameworks */,
+				B50000000000000000000003 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = QuestCastPad;
+			productName = QuestCastPad;
+			productReference = B20000000000000000000003 /* QuestCastPad.app */;
+			productType = "com.apple.product-type.application";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -108,6 +159,9 @@
 				TargetAttributes = {
 					A40000000000000000000001 = {
 						CreatedOnToolsVersion = 26.6;
+					};
+					B40000000000000000000001 = {
+						CreatedOnToolsVersion = 27.0;
 					};
 				};
 			};
@@ -125,6 +179,7 @@
 			projectRoot = "";
 			targets = (
 				A40000000000000000000001 /* QuestCastTV */,
+				B40000000000000000000001 /* QuestCastPad */,
 			);
 		};
 /* End PBXProject section */
@@ -135,6 +190,14 @@
 			buildActionMask = 2147483647;
 			files = (
 				A10000000000000000000007 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B50000000000000000000003 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B1000000000000000000000A /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -153,6 +216,23 @@
 					A10000000000000000000006 /* PixelBufferSurface.swift in Sources */,
 					A10000000000000000000008 /* AudioPacketAssembler.swift in Sources */,
 					A10000000000000000000009 /* QuestAudioPlayer.swift in Sources */,
+				A10000000000000000000010 /* AccessibilityID.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B50000000000000000000001 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B10000000000000000000001 /* QuestCastTVApp.swift in Sources */,
+				B10000000000000000000002 /* ContentView.swift in Sources */,
+				B10000000000000000000003 /* ReceiverController.swift in Sources */,
+				B10000000000000000000004 /* PacketAssembler.swift in Sources */,
+				B10000000000000000000005 /* VideoDecoder.swift in Sources */,
+				B10000000000000000000006 /* PixelBufferSurface.swift in Sources */,
+				B10000000000000000000007 /* AccessibilityID.swift in Sources */,
+				B10000000000000000000008 /* AudioPacketAssembler.swift in Sources */,
+				B10000000000000000000009 /* QuestAudioPlayer.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -221,6 +301,50 @@
 			};
 			name = Release;
 		};
+		B80000000000000000000001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = QuestCastPad/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 0.5;
+				PRODUCT_BUNDLE_IDENTIFIER = ca.chartrand.QuestCastPad;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 2;
+			};
+			name = Debug;
+		};
+		B80000000000000000000002 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = QuestCastPad/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 0.5;
+				PRODUCT_BUNDLE_IDENTIFIER = ca.chartrand.QuestCastPad;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 2;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -238,6 +362,15 @@
 			buildConfigurations = (
 				A80000000000000000000003 /* Debug */,
 				A80000000000000000000004 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		B70000000000000000000001 /* Build configuration list for PBXNativeTarget "QuestCastPad" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B80000000000000000000001 /* Debug */,
+				B80000000000000000000002 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

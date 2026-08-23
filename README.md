@@ -2,7 +2,7 @@
 
 ![QuestCast cover](StoreAssets/QuestCast-Cover-Landscape-2560x1440.png)
 
-QuestCast is an experimental, low-latency casting system for showing a Meta Quest 3 headset view on an Apple TV over a local network. It is built as two small native applications with no PC, cloud service, account, or relay in the middle.
+QuestCast is an experimental, low-latency casting system for showing a Meta Quest headset view on an Apple TV or iPad over a local network. It is built as two small native applications with no PC, cloud service, account, or relay in the middle.
 
 **Project site:** [regulara.github.io/QuestCast](https://regulara.github.io/QuestCast/)
 
@@ -12,24 +12,24 @@ QuestCast is an experimental, low-latency casting system for showing a Meta Ques
 ## How it works
 
 ```text
-Meta Quest 3 -- Wi-Fi --> local access point -- Ethernet/Wi-Fi --> Apple TV --> television
-     MediaProjection      H.264 access units over UDP       VideoToolbox
+Meta Quest -- Wi-Fi --> local access point -- Ethernet/Wi-Fi --> Apple TV or iPad
+ MediaProjection          H.264 access units over UDP          VideoToolbox
 ```
 
-The Quest sender captures the user-approved display surface with Android `MediaProjection`, encodes H.264 in hardware, and fragments each access unit into small UDP datagrams. The Apple TV receiver advertises itself with Bonjour, reassembles complete access units, decodes with VideoToolbox, and renders the newest available frame without a playback queue.
+The Quest sender captures the user-approved display surface with Android `MediaProjection`, encodes H.264 in hardware, and fragments each access unit into small UDP datagrams. The Apple receiver advertises itself with Bonjour, reassembles complete access units, decodes with VideoToolbox, and renders the newest available frame without a playback queue.
 
 This design prioritises responsiveness over perfect delivery: incomplete or late frames are discarded instead of delaying subsequent frames.
 
 ## Features
 
 - No PC required after building and installing the apps
-- Automatic Apple TV discovery with Bonjour (`_questcast._udp`)
+- Automatic Apple TV and iPad receiver discovery with Bonjour (`_questcast._udp`)
 - H.264 hardware encoding and decoding
 - 1920 x 1080 at a 60 fps target
 - Zero-buffer receiver path designed for low latency
 - Video stays on the local network, no cloud or internet services involved
-- Optional diagnostics overlay on Apple TV using the Play/Pause button
-- Apple TV screensaver remains available while the receiver is idle
+- Optional diagnostics overlay using Play/Pause on Apple TV or the info button on iPad
+- The iPad stays awake while the receiver is open
 - Optional experimental 48 kHz stereo playback audio, off by default
 
 ## Downloads
@@ -38,27 +38,28 @@ Prebuilt Quest sender APKs are published on [GitHub Releases](https://github.com
 
 Some Meta Quest 3 users can also join the alpha channel on the Meta Quest App Store to easily install the Sender app on their Quest device here: [https://www.meta.com/s/4PVHdWsca](https://www.meta.com/s/4PVHdWsca)
 
-The Apple TV receiver app must currently be built and signed with the user's own Apple Developer team in Xcode, as at the moment I am not a paying member of the Apple Developer programme.
+The Apple receiver apps must currently be built and signed with the user's own Apple Developer team in Xcode, as at the moment I am not a paying member of the Apple Developer programme.
 
-Both the Sender and the Receiver app must be installed on the Meta Quest 3 and Apple TV respectively for this casting to work. Both devices must also be on the same local network.
+Both the Sender and a Receiver app must be installed on the Meta Quest and destination device respectively for this casting to work. Both devices must also be on the same local network.
 
 The `fix/spectator-stability` build uses the distinct Android application ID `ca.chartrand.questcast` and the visible name **QuestCast Lab**. It can stay installed beside the official sender as a fallback. This build has been physically validated with a Meta Quest Pro, Beat Saber, Les Mills Bodycombat, and an Apple TV.
 
 ## Repository layout
 
 - `QuestSender/` — native Android sender for Meta Horizon OS
-- `QuestCastTV/` — SwiftUI tvOS receiver sources
-- `QuestCastTV.xcodeproj/` — Xcode project for Apple TV
+- `QuestCastTV/` — shared SwiftUI receiver sources and tvOS resources
+- `QuestCastPad/` — iPadOS receiver configuration and resources
+- `QuestCastTV.xcodeproj/` — Xcode project containing the Apple TV and iPad targets
 - `Shared/protocol.md` — versioned UDP wire protocol
 - `StoreAssets/` — artwork and representative screenshots
 
 ## Requirements
 
 - Meta Quest 3 or compatible Horizon OS headset with Developer Mode enabled for local deployment
-- Apple TV running tvOS 17 or later
-- Xcode with the tvOS SDK
+- Apple TV running tvOS 17 or later, or iPad running iPadOS 17 or later
+- Xcode with the tvOS or iOS SDK for the selected receiver
 - Android Studio with Android SDK 35 (if building the Sender app)
-- A local network that permits Bonjour/mDNS and direct UDP traffic between the headset and Apple TV
+- A local network that permits Bonjour/mDNS and direct UDP traffic between the headset and receiver
 - Television Game Mode recommended
 
 ## Build the Apple TV Receiver App
@@ -71,13 +72,24 @@ The `fix/spectator-stability` build uses the distinct Android application ID `ca
 
 The receiver listens on UDP port `49152` and publishes `QuestCast TV` through Bonjour.
 
+## Build the iPad Receiver App
+
+1. Open `QuestCastTV.xcodeproj` in Xcode.
+2. Select the `QuestCastPad` target.
+3. Choose your Apple Developer team if Xcode requests one.
+4. Select your paired iPad as the run destination.
+5. Build and run, approve Local Network access, then leave QuestCast open.
+
+The iPad receiver listens on UDP port `49152` and publishes `QuestCast iPad` through Bonjour. Keep it in the foreground while casting.
+On current iPadOS windowing, use the green window control to fill the display if QuestCast reopens in a smaller window.
+
 ## Build the Quest Sender App
 
 1. Open `QuestSender/` in Android Studio.
 2. Allow Gradle to sync.
 3. Connect the headset over USB and approve USB debugging.
 4. Run the `app` configuration on the headset.
-5. Open QuestCast, select the discovered Apple TV, and approve Horizon OS screen capture.
+5. Open QuestCast, select the discovered receiver, and approve Horizon OS screen capture.
 6. Switch to the experience you want to show.
 
 For a command-line debug build:
@@ -91,12 +103,12 @@ The resulting APK is written under `QuestSender/app/build/outputs/apk/debug/`.
 
 ## Using QuestCast
 
-1. Start QuestCast on the Apple TV.
+1. Start QuestCast on the Apple TV or iPad.
 2. Start QuestCast on the headset.
-3. Select **Cast to QuestCast TV**.
+3. Select **Cast to QuestCast TV** or **Cast to QuestCast iPad**.
 4. Approve the system capture prompt.
 5. Before starting, optionally enable **Include headset audio**. This requests playback-audio permission; the microphone is not captured.
-6. Press Play/Pause on the Siri Remote during casting to toggle technical diagnostics.
+6. During casting, press Play/Pause on the Siri Remote or tap the iPad info button to toggle technical diagnostics.
 
 ![QuestCast sender interface](StoreAssets/QuestCast-Screenshot-01-2560x1440.png)
 
@@ -133,7 +145,7 @@ Network ping does not measure capture-to-display latency. For a useful test, sho
 - Playback audio capture depends on Horizon OS and the foreground app allowing it; protected or opted-out apps may be silent
 - No authentication, encryption, retransmission, or forward-error correction
 - Packet loss can discard a complete encoded frame
-- Tested primarily with Meta Quest 3 and Apple TV on the same local network
+- Tested primarily with Meta Quest Pro, Apple TV, and iPad on the same local network
 - Store-distributed builds require the publisher's own signing and platform review
 
 Contributions and reproducible latency measurements are welcome.
