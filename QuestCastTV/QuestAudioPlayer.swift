@@ -5,9 +5,18 @@ final class QuestAudioPlayer {
     private static let sampleRate = 48_000.0
     private static let channels: AVAudioChannelCount = 2
     private static let bytesPerFrame = 4
+#if os(tvOS)
     private static let bufferCapacityFrames = 9_600 // 200 ms
     private static let bufferStartFrames = 2_880 // 60 ms
     private static let bufferHighWaterFrames = 5_760 // 120 ms
+#else
+    // iPad receives and renders the spectator view in the foreground. Keep
+    // enough audio queued to absorb high-motion video packet bursts without
+    // changing the lower-latency Apple TV profile.
+    private static let bufferCapacityFrames = 14_400 // 300 ms
+    private static let bufferStartFrames = 4_800 // 100 ms
+    private static let bufferHighWaterFrames = 9_600 // 200 ms
+#endif
 
     private let queue = DispatchQueue(label: "com.apctv.questcast.audio", qos: .userInteractive)
     private let engine = AVAudioEngine()
@@ -85,6 +94,10 @@ final class QuestAudioPlayer {
 
         let session = AVAudioSession.sharedInstance()
         try? session.setCategory(.playback, mode: .moviePlayback)
+#if os(iOS)
+        try? session.setPreferredSampleRate(Self.sampleRate)
+        try? session.setPreferredIOBufferDuration(0.01)
+#endif
         try? session.setActive(true)
         engine.prepare()
         try? engine.start()

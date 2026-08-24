@@ -63,8 +63,10 @@ class ProjectionService : Service() {
         } ?: return stopForError()
         val host = intent.getStringExtra(EXTRA_HOST) ?: return stopForError()
         val port = intent.getIntExtra(EXTRA_PORT, DEFAULT_PORT)
+        val receiverName = intent.getStringExtra(EXTRA_RECEIVER_NAME).orEmpty()
         val includeAudio = intent.getBooleanExtra(EXTRA_INCLUDE_AUDIO, false)
-        publishStatus("Starting encoder for $host:$port")
+        val bitRate = if (receiverName.startsWith(IPAD_RECEIVER_NAME)) IPAD_BIT_RATE else DEFAULT_BIT_RATE
+        publishStatus("Starting encoder for $receiverName at $host:$port")
 
         val manager = getSystemService(MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
         projection = manager.getMediaProjection(resultCode, resultData).also { mediaProjection ->
@@ -74,7 +76,7 @@ class ProjectionService : Service() {
         }
 
         startupExecutor.execute {
-            runCatching { startEncoder(InetAddress.getByName(host), port, includeAudio) }
+            runCatching { startEncoder(InetAddress.getByName(host), port, includeAudio, bitRate) }
                 .onSuccess { starting.set(false) }
                 .onFailure { error ->
                     starting.set(false)
@@ -102,12 +104,12 @@ class ProjectionService : Service() {
         super.onDestroy()
     }
 
-    private fun startEncoder(address: InetAddress, port: Int, includeAudio: Boolean) {
+    private fun startEncoder(address: InetAddress, port: Int, includeAudio: Boolean, bitRate: Int) {
         socket = DatagramSocket().apply { connect(address, port) }
 
         val format = MediaFormat.createVideoFormat(MediaFormat.MIMETYPE_VIDEO_AVC, WIDTH, HEIGHT).apply {
             setInteger(MediaFormat.KEY_COLOR_FORMAT, MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface)
-            setInteger(MediaFormat.KEY_BIT_RATE, BIT_RATE)
+            setInteger(MediaFormat.KEY_BIT_RATE, bitRate)
             setInteger(MediaFormat.KEY_FRAME_RATE, FRAME_RATE)
             setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, I_FRAME_INTERVAL_SECONDS)
         }
@@ -121,9 +123,9 @@ class ProjectionService : Service() {
                     MediaFormat.KEY_BITRATE_MODE,
                     MediaCodecInfo.EncoderCapabilities.BITRATE_MODE_CBR
                 )
-                Log.i(TAG, "Using ${codec.name} at $BIT_RATE bps in CBR mode")
+                Log.i(TAG, "Using ${codec.name} at $bitRate bps in CBR mode")
             } else {
-                Log.i(TAG, "Using ${codec.name} at $BIT_RATE bps in encoder-default bitrate mode")
+                Log.i(TAG, "Using ${codec.name} at $bitRate bps in encoder-default bitrate mode")
             }
             codec.configure(format, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE)
             val inputSurface = codec.createInputSurface()
@@ -305,6 +307,7 @@ class ProjectionService : Service() {
         const val EXTRA_RESULT_DATA = "resultData"
         const val EXTRA_HOST = "host"
         const val EXTRA_PORT = "port"
+        const val EXTRA_RECEIVER_NAME = "receiverName"
         const val EXTRA_STATUS = "status"
         const val EXTRA_INCLUDE_AUDIO = "includeAudio"
         const val ACTION_STATUS = "com.apctv.questcast.STATUS"
@@ -312,7 +315,9 @@ class ProjectionService : Service() {
         private const val WIDTH = 1920
         private const val HEIGHT = 1080
         private const val FRAME_RATE = 60
-        private const val BIT_RATE = 12_000_000
+        private const val DEFAULT_BIT_RATE = 12_000_000
+        private const val IPAD_BIT_RATE = 8_000_000
+        private const val IPAD_RECEIVER_NAME = "QuestCast iPad"
         private const val I_FRAME_INTERVAL_SECONDS = 1
         private const val DEFAULT_PORT = 49152
         private const val CHANNEL_ID = "questcast-capture"

@@ -15,6 +15,9 @@ final class ReceiverController: ObservableObject {
     let advertisedName: String
 
     private let networkQueue = DispatchQueue(label: "com.apctv.questcast.receiver.network", qos: .userInteractive)
+#if os(iOS)
+    private let videoDecodeQueue = DispatchQueue(label: "com.apctv.questcast.receiver.video-decode", qos: .userInteractive)
+#endif
     private let decoder: VideoDecoder
     private lazy var audioPlayer = QuestAudioPlayer(
         onBufferChanged: { [weak self] milliseconds in
@@ -119,19 +122,47 @@ final class ReceiverController: ObservableObject {
         if unit.isConfiguration {
             audioAssembler.reset()
             audioPlayer.stop()
-            decoder.configure(with: unit.data)
+            configureDecoder(with: unit.data)
             publishStatus("Quest connected — waiting for video")
             return
         }
         lastVideoFrameTime = .now()
         streamingOnNetworkQueue = true
-        decoder.decode(unit.data, isKeyFrame: unit.isKeyFrame, presentationTimeUs: unit.presentationTimeUs)
+        decodeVideo(unit)
         DispatchQueue.main.async { [weak self] in
             guard let self else { return }
             self.isStreaming = true
             self.status = "Live • 1080p60 target • zero-buffer mode"
             self.framesDecoded += 1
         }
+    }
+
+    private func configureDecoder(with data: Data) {
+#if os(iOS)
+        videoDecodeQueue.async { [weak self] in
+            self?.decoder.configure(with: data)
+        }
+#else
+        decoder.configure(with: data)
+#endif
+    }
+
+    private func decodeVideo(_ unit: AccessUnit) {
+#if os(iOS)
+        videoDecodeQueue.async { [weak self] in
+            self?.decoder.decode(
+                unit.data,
+                isKeyFrame: unit.isKeyFrame,
+                presentationTimeUs: unit.presentationTimeUs
+            )
+        }
+#else
+        decoder.decode(
+            unit.data,
+            isKeyFrame: unit.isKeyFrame,
+            presentationTimeUs: unit.presentationTimeUs
+        )
+#endif
     }
 
     private func startStreamWatchdog() {

@@ -67,6 +67,7 @@ class MainActivity : ComponentActivity() {
             putExtra(ProjectionService.EXTRA_RESULT_DATA, data)
             putExtra(ProjectionService.EXTRA_HOST, receiver.host.hostAddress)
             putExtra(ProjectionService.EXTRA_PORT, receiver.port)
+            putExtra(ProjectionService.EXTRA_RECEIVER_NAME, receiver.serviceName)
             putExtra(ProjectionService.EXTRA_INCLUDE_AUDIO, includeAudioSwitch.isChecked)
         }
         ContextCompat.startForegroundService(this, serviceIntent)

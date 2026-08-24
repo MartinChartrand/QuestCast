@@ -42,7 +42,7 @@ The Apple receiver apps must currently be built and signed with the user's own A
 
 Both the Sender and a Receiver app must be installed on the Meta Quest and destination device respectively for this casting to work. Both devices must also be on the same local network.
 
-The `fix/spectator-stability` build uses the distinct Android application ID `ca.chartrand.questcast` and the visible name **QuestCast Lab**. It can stay installed beside the official sender as a fallback. This build has been physically validated with a Meta Quest Pro, Beat Saber, Les Mills Bodycombat, and an Apple TV.
+The `fix/spectator-stability` build uses the distinct Android application ID `ca.chartrand.questcast` and the visible name **QuestCast Lab**. It can stay installed beside the official sender as a fallback. This build has been physically validated with a Meta Quest Pro, Beat Saber, Les Mills Bodycombat, an Apple TV, and an iPad.
 
 ## Repository layout
 
@@ -60,6 +60,7 @@ The `fix/spectator-stability` build uses the distinct Android application ID `ca
 - Xcode with the tvOS or iOS SDK for the selected receiver
 - Android Studio with Android SDK 35 (if building the Sender app)
 - A local network that permits Bonjour/mDNS and direct UDP traffic between the headset and receiver
+- A 5 GHz Wi-Fi connection is strongly recommended for the headset during high-motion scenes; verify that it joined the intended SSID rather than a nearby 2.4 GHz network
 - Television Game Mode recommended
 
 ## Build the Apple TV Receiver App
@@ -116,14 +117,16 @@ The resulting APK is written under `QuestSender/app/build/outputs/apk/debug/`.
 
 - Codec: H.264/AVC
 - Capture target: 1920 x 1080 at 60 fps
-- Bit rate: 12 Mbps
+- Bit rate: 12 Mbps for Apple TV; 8 Mbps for the iPad receiver profile
 - Bit-rate mode: CBR when the hardware encoder advertises support; otherwise the encoder default
 - Keyframe interval: one second
 - Datagram size: no more than 1200 bytes
 - Incomplete-frame expiry: 80 ms
 - Receiver playback/jitter buffer: none
 - Optional audio: PCM 16-bit, 48 kHz stereo in 10 ms chunks
-- Audio startup/jitter buffer: starts at 60 ms, trims above 120 ms, and has a 200 ms hard capacity
+- Apple TV audio startup/jitter buffer: starts at 60 ms, trims above 120 ms, and has a 200 ms hard capacity
+- iPad audio startup/jitter buffer: starts at 100 ms, trims above 200 ms, and has a 300 ms hard capacity
+- The iPad receiver prepares and decodes video on a dedicated queue so high-motion H.264 bursts do not block network/audio assembly
 
 H.265 may reduce bandwidth, but H.264 is the current default because its hardware path is widely supported and predictable. A future H.265 mode should be measured end-to-end rather than assumed to be faster.
 
